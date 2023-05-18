@@ -1346,6 +1346,53 @@ def test_tensorflow_embedding_lookup(
         max_norm=max_norm,
         atol=1e-4,
     )
+#embedding_lookup_sparse
+@handle_frontend_test(
+    fn_tree="tensorflow.nn.embedding_lookup_sparse",
+    dtypes_indices_weights=helpers.embedding_helper(),
+    sparsity=st.floats(min_value=0, max_value=1),
+    default_value=st.floats(),
+    combiner=st.sampled_from(['sum', 'mean', 'sqrtn']),
+    max_norm=st.floats(min_value=0, max_value=5, exclude_min=True),
+)
+
+def test_tensorflow_embedding_lookup_sparse(
+    *,
+    dtypes_indices_weights,
+    sparsity,
+    default_value,
+    combiner,
+    max_norm,
+    test_flags,
+    on_device,
+    fn_tree,
+    frontend,
+):
+    dtypes, indices, weight, _ = dtypes_indices_weights
+    dtypes.reverse()
+
+    # Convert the indices and weights to sparse tensors
+    num_indices = indices.shape[0]
+    num_dims = weight.shape[1]
+    sp_indices = tf.random.uniform(shape=(num_indices, num_dims), maxval=num_dims, dtype=tf.int64)
+    sp_values = tf.ones(shape=(num_indices,), dtype=weight.dtype)
+    sp_weights = tf.sparse.SparseTensor(indices=sp_indices, values=sp_values, dense_shape=weight.shape)
+
+    # Test the function using the sparse indices and weights
+    helpers.test_frontend_function(
+        input_dtypes=dtypes,
+        test_flags=test_flags,
+        frontend=frontend,
+        fn_tree=fn_tree,
+        on_device=on_device,
+        params=weight,
+        sp_ids=sp_indices,
+        sp_weights=sp_weights,
+        default_value=default_value,
+        combiner=combiner,
+        max_norm=max_norm,
+        atol=1e-4,
+    )
 
 
 # crelu

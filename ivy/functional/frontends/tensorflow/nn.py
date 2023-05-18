@@ -3,7 +3,7 @@ import ivy
 from ivy.functional.frontends.tensorflow.func_wrapper import to_ivy_arrays_and_back
 from ivy.func_wrapper import with_supported_dtypes, with_unsupported_dtypes
 from ivy.functional.frontends.tensorflow import math
-
+# from tensorflow.nn import embedding_lookup_sparse
 
 def _reduce_strides_dilations(dim, stride, dilations):
     if not isinstance(stride, int):
@@ -470,6 +470,10 @@ def convolution(
 @to_ivy_arrays_and_back
 def embedding_lookup(params, ids, max_norm=None, name=None):
     return ivy.embedding(params, ids, max_norm=max_norm)
+
+@to_ivy_arrays_and_back
+def embedding_lookup_spare(params, sp_ids, sp_weights, default_value=0, combiner=None, max_norm=None, name=None, partition_strategy='mod'):
+    return ivy.embedding_lookup_sparse(params, sp_ids, sp_weights, default_value=default_value, partition_strategy=partition_strategy)
 
 
 @to_ivy_arrays_and_back
